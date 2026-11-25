@@ -1,0 +1,39 @@
+[gd_scene format=3 uid="uid://cvwiutl7uu3i4"]
+
+[ext_resource type="FontFile" uid="uid://c7ewsn767rk6" path="res://terminal 16 unicode.ttf" id="3_epypp"]
+
+[node name="Node2D" type="Node2D" unique_id=466613231]
+
+[node name="Node2D" type="Node2D" parent="." unique_id=825292005]
+scale = Vector2(5, 5)
+
+[node name="Control" type="Control" parent="Node2D" unique_id=1564049734]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Label" type="Label" parent="Node2D/Control" unique_id=1076367423]
+modulate = Color(0, 1, 0, 1)
+layout_mode = 0
+offset_left = 6.0
+offset_top = 17.0
+offset_right = 222.0
+offset_bottom = 33.0
+theme_override_fonts/font = ExtResource("3_epypp")
+text = "CYBERSECURITY QUIZ"
+max_lines_visible = 999
+visible_characters = 9999
+visible_ratio = 4999.5
+
+[node name="Button" type="Button" parent="Node2D/Control" unique_id=2006580428]
+layout_mode = 0
+offset_left = 81.399994
+offset_top = 68.2
+offset_right = 149.4
+offset_bottom = 99.2
+theme_override_colors/font_color = Color(0, 0.8745098, 0, 1)
+theme_override_colors/font_hover_color = Color(0, 0.6039216, 0, 1)
+theme_override_colors/icon_pressed_color = Color(0, 0.7019608, 0, 1)
+theme_override_fonts/font = ExtResource("3_epypp")
+text = "start"
