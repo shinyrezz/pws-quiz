@@ -12,5 +12,6 @@ func _process(delta: float) -> void:
 
 
 func _on_pressed() -> void:
-	load("res://Tutorial.tscn")
-	queue_free("res://node_2d.tscn")
+	get_tree().change_scene_to_file("res://Tutorial.tscn")
+	Global.sceneswitch = true
+	

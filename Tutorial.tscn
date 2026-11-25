@@ -1,3 +1,56 @@
 [gd_scene format=3 uid="uid://csyf04nl7vkhx"]
 
+[ext_resource type="Script" uid="uid://dbrdhprv0ohlt" path="res://tutorial.gd" id="1_fr6qw"]
+[ext_resource type="FontFile" uid="uid://c7ewsn767rk6" path="res://terminal 16 unicode.ttf" id="2_oiqhk"]
+[ext_resource type="Script" uid="uid://dtdm0scckef3i" path="res://button2.gd" id="3_p3v23"]
+
 [node name="Node2D" type="Node2D" unique_id=887558977]
+scale = Vector2(5, 5)
+script = ExtResource("1_fr6qw")
+
+[node name="Label" type="Label" parent="." unique_id=73489867]
+modulate = Color(0, 1, 0, 1)
+offset_left = 76.2
+offset_top = 8.4
+offset_right = 244.2
+offset_bottom = 24.4
+theme_override_fonts/font = ExtResource("2_oiqhk")
+text = "Uitleg"
+max_lines_visible = 999
+
+[node name="Node2D" type="Node2D" parent="." unique_id=1911602914]
+scale = Vector2(0.45, 0.45)
+
+[node name="Label2" type="Label" parent="Node2D" unique_id=278293432]
+modulate = Color(0, 1, 0, 1)
+offset_left = 21.333332
+offset_top = 65.77778
+offset_right = 489.33334
+offset_bottom = 157.77777
+theme_override_fonts/font = ExtResource("2_oiqhk")
+text = "Je krijgt ... vragen over cybersecurity
+Bij elke vraag krijg je 30 seconden
+om antwoord te geven.
+
+gebaseert op je antwoord krijg je punten
+voor hoe veilig je \"bedrijf\" is
+Je ziet je punten aan het einde 
+Hoe meer punten, hoe beter
+"
+horizontal_alignment = 1
+max_lines_visible = 999
+
+[node name="Button" type="Button" parent="Node2D/Label2" unique_id=1240386132]
+layout_mode = 0
+offset_left = 153.77779
+offset_top = 157.77777
+offset_right = 295.55554
+offset_bottom = 207.55556
+theme_override_colors/font_color = Color(0, 0.8745098, 0, 1)
+theme_override_colors/font_hover_color = Color(0, 0.6039216, 0, 1)
+theme_override_colors/icon_pressed_color = Color(0, 0.7019608, 0, 1)
+theme_override_fonts/font = ExtResource("2_oiqhk")
+text = "start"
+script = ExtResource("3_p3v23")
+
+[connection signal="pressed" from="Node2D/Label2/Button" to="Node2D/Label2/Button" method="_on_pressed2"]

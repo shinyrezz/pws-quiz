@@ -1,0 +1,16 @@
+[gd_scene format=3 uid="uid://c5fy5n0nsp3hw"]
+
+[ext_resource type="Texture2D" uid="uid://def6rqv0dnahj" path="res://icon.svg" id="1_uqn54"]
+
+[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_gy4da"]
+
+[node name="Node2D" type="Node2D" unique_id=644014853]
+
+[node name="Area2D" type="Area2D" parent="." unique_id=1882952489]
+position = Vector2(14, 535)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=922511897]
+shape = SubResource("WorldBoundaryShape2D_gy4da")
+
+[node name="Sprite2D" type="Sprite2D" parent="Area2D" unique_id=1559791142]
+texture = ExtResource("1_uqn54")
