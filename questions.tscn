@@ -9,8 +9,9 @@ scale = Vector2(5, 5)
 
 [node name="Label" type="Label" parent="Node2D" unique_id=1671351138]
 modulate = Color(0, 1, 0, 1)
+offset_top = 3.3999999
 offset_right = 230.4
-offset_bottom = 21.999998
+offset_bottom = 25.399998
 theme_override_fonts/font = ExtResource("1_uqn54")
 text = "vraag 1: "
 horizontal_alignment = 1
