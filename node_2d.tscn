@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://cvwiutl7uu3i4"]
 
-[ext_resource type="Script" uid="uid://cp0ubdxpv238u" path="res://unload.gd" id="1_epypp"]
-[ext_resource type="Script" uid="uid://b8rcudgv505k3" path="res://button.gd" id="2_0e48y"]
+[ext_resource type="Script" uid="uid://cp0ubdxpv238u" path="res://code/unload.gd" id="1_epypp"]
+[ext_resource type="Script" uid="uid://b8rcudgv505k3" path="res://code/button.gd" id="2_0e48y"]
 [ext_resource type="FontFile" uid="uid://c7ewsn767rk6" path="res://terminal 16 unicode.ttf" id="3_epypp"]
 
 [node name="Node2D" type="Node2D" unique_id=466613231]

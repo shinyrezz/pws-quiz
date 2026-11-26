@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://csyf04nl7vkhx"]
 
-[ext_resource type="Script" uid="uid://dbrdhprv0ohlt" path="res://tutorial.gd" id="1_fr6qw"]
+[ext_resource type="Script" uid="uid://dbrdhprv0ohlt" path="res://code/tutorial.gd" id="1_fr6qw"]
 [ext_resource type="FontFile" uid="uid://c7ewsn767rk6" path="res://terminal 16 unicode.ttf" id="2_oiqhk"]
-[ext_resource type="Script" uid="uid://dtdm0scckef3i" path="res://button2.gd" id="3_p3v23"]
+[ext_resource type="Script" uid="uid://dtdm0scckef3i" path="res://code/button2.gd" id="3_p3v23"]
 
 [node name="Node2D" type="Node2D" unique_id=887558977]
 scale = Vector2(5, 5)

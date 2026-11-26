@@ -1,16 +1,17 @@
 [gd_scene format=3 uid="uid://c5fy5n0nsp3hw"]
 
-[ext_resource type="Texture2D" uid="uid://def6rqv0dnahj" path="res://icon.svg" id="1_uqn54"]
-
-[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_gy4da"]
+[ext_resource type="FontFile" uid="uid://c7ewsn767rk6" path="res://terminal 16 unicode.ttf" id="1_uqn54"]
 
 [node name="Node2D" type="Node2D" unique_id=644014853]
 
-[node name="Area2D" type="Area2D" parent="." unique_id=1882952489]
-position = Vector2(14, 535)
+[node name="Node2D" type="Node2D" parent="." unique_id=1765130006]
+scale = Vector2(5, 5)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=922511897]
-shape = SubResource("WorldBoundaryShape2D_gy4da")
-
-[node name="Sprite2D" type="Sprite2D" parent="Area2D" unique_id=1559791142]
-texture = ExtResource("1_uqn54")
+[node name="Label" type="Label" parent="Node2D" unique_id=1671351138]
+modulate = Color(0, 1, 0, 1)
+offset_right = 230.4
+offset_bottom = 21.999998
+theme_override_fonts/font = ExtResource("1_uqn54")
+text = "vraag 1: "
+horizontal_alignment = 1
+max_lines_visible = 999
