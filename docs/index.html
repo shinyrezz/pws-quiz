@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Het verhaal van jouw bedrijf</title>
+<style>
+/* Terminalstijl zoals de quiz in Godot: groen op zwart, pixel-font voor koppen, gewone letter voor het verhaal */
+@font-face{font-family:"Terminal16";src:url("terminal16.ttf") format("truetype");font-display:swap}
+:root{
+  --bg:#050d05; --panel:#0a170a; --line:#1d4a1d; --fg:#d6f5d6; --green:#33ff33; --dim:#4fae4f;
+  --bad:#ff6b5a; --warn:#ffc04d; --good:#33ff33;
+  --pixel:"Terminal16",ui-monospace,Consolas,monospace;
+  --read:Georgia,"Times New Roman",serif;
+  --ui:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--ui);font-size:16px;line-height:1.55}
+.wrap{max-width:720px;margin:0 auto;padding:32px max(16px,env(safe-area-inset-right)) 64px max(16px,env(safe-area-inset-left));display:flex;flex-direction:column;gap:24px}
+h1,h2{font-family:var(--pixel);font-weight:normal;color:var(--green);margin:0;line-height:1.2;text-wrap:balance}
+h1{font-size:clamp(28px,7vw,40px)}
+h2{font-size:24px}
+p{margin:0}
+.eyebrow{font-family:var(--pixel);font-size:16px;color:var(--dim);letter-spacing:.04em}
+.panel{background:var(--panel);border:2px solid var(--line);padding:24px;display:flex;flex-direction:column;gap:16px}
+label{display:flex;flex-direction:column;gap:6px;font-family:var(--pixel);color:var(--green);font-size:16px}
+input{font:inherit;font-family:var(--pixel);font-size:24px;padding:10px 12px;background:#000;color:var(--green);border:2px solid var(--dim);text-transform:none}
+#code{text-transform:uppercase;letter-spacing:.15em}
+input:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+button{font-family:var(--pixel);font-size:24px;padding:10px 20px;background:transparent;color:var(--green);border:2px solid var(--green);cursor:pointer;align-self:flex-start}
+button:hover{background:var(--green);color:#000}
+.error{color:var(--bad);font-size:15px}
+.tale{font-family:var(--read);font-size:18px;line-height:1.75;display:flex;flex-direction:column;gap:1.1em}
+.tale .end{color:var(--green)}
+.score{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.big{font-family:var(--pixel);font-size:56px;color:var(--green);line-height:1}
+.big small{font-size:24px;color:var(--dim)}
+.pill{font-family:var(--pixel);font-size:16px;padding:2px 10px;border:2px solid currentColor;align-self:flex-start}
+.s0,.s1{color:var(--bad)} .s2{color:var(--warn)} .s3{color:var(--good)}
+.note{font-size:14px;color:var(--dim)}
+.list{padding:0;gap:0}
+.ri{display:grid;grid-template-columns:auto 1fr;gap:2px 14px;padding:12px 20px;border-top:1px solid var(--line)}
+.ri:first-child{border-top:0}
+.ri .pts{font-family:var(--pixel);grid-row:span 2}
+.ri .ch{font-family:var(--pixel);font-size:16px;color:var(--dim)}
+.ri .a{font-size:15px;min-width:0}
+a{color:var(--green)}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header style="display:flex;flex-direction:column;gap:8px">
+    <span class="eyebrow">PWS CYBERSECURITY · MERLIJN VAN DE BOR &amp; ROWAN ZWART</span>
+    <h1 id="title">HET VERHAAL VAN JOUW BEDRIJF</h1>
+  </header>
+
+  <!-- code invullen -->
+  <form class="panel" id="form" hidden>
+    <p>Vul de code in die je aan het eind van de quiz kreeg. Dan lees je wat er met jouw bedrijf is gebeurd.</p>
+    <label for="code">JOUW CODE
+      <input id="code" autocomplete="off" maxlength="9" placeholder="ABC-DEFG" inputmode="text">
+    </label>
+    <label for="naam">NAAM VAN JE BEDRIJF (MAG LEEG)
+      <input id="naam" autocomplete="off" maxlength="30" placeholder="Bakkerij De Korst">
+    </label>
+    <p class="error" id="error" hidden>Deze code klopt niet. Kijk nog even goed: het zijn 7 tekens, bijvoorbeeld ABC-DEFG.</p>
+    <button type="submit">LEES VERHAAL</button>
+  </form>
+
+  <!-- verhaal -->
+  <section id="result" hidden style="display:flex;flex-direction:column;gap:24px">
+    <div class="panel"><div class="tale" id="tale"></div></div>
+    <div class="panel">
+      <span class="eyebrow">JE SCORE</span>
+      <div class="score">
+        <div class="big" id="score"></div>
+        <div style="display:flex;flex-direction:column;gap:6px;flex:1;min-width:0">
+          <span class="pill" id="pill"></span>
+          <h2 id="levelTitle"></h2>
+        </div>
+      </div>
+      <p id="levelText"></p>
+      <p class="note" id="compare"></p>
+    </div>
+    <h2>PUNTEN PER HOOFDSTUK</h2>
+    <div class="panel list" id="list"></div>
+    <p class="note"><a href="./">Andere code invullen</a></p>
+  </section>
+</div>
+
+<script>
+/* o[0] = 0 punten ... o[3] = 3 punten.
+   t = begin van de verhaalzin voor dit hoofdstuk, s[n] = vervolg bij antwoord n. [naam] = bedrijfsnaam. */
+const Q = [
+ {ch:"De start", q:"Je hebt net een nieuw bedrijf opgericht met alleen jij en 2 vrienden. Hoe ga je het beveiligen?",
+  o:["Nog niet. Hackers richten zich op grote bedrijven, dus ik steek mijn tijd liever in klanten zoeken.",
+     "Ik spreek met mijn vrienden af dat we goed opletten bij rare mails. Dat kost niks en we kennen elkaar goed.",
+     "We nemen allemaal een sterk wachtwoord en installeren een virusscanner. Dat is snel geregeld.",
+     "We zetten overal tweestapsverificatie aan en bouwen alles vanaf het begin veilig op. Dat kost nu wat tijd, maar later hoeven we niks om te bouwen."],
+  t:"Nadat jij [naam] had opgericht met twee vrienden, ",
+  s:["besloot je om je bedrijf nog niet te beveiligen, omdat hacks toch alleen bij grote bedrijven gebeuren. Maar omdat je niks had beveiligd, kon een hacker zijn skills op jou oefenen zonder dat je het doorhad.",
+     "sprak je met je vrienden af dat jullie goed zouden opletten bij rare mails. Maar omdat je geen sterke wachtwoorden of tweestapsverificatie had, kon een hacker met één geraden wachtwoord zo binnenkomen.",
+     "nam iedereen een sterk wachtwoord en installeerden jullie een virusscanner. Maar omdat je geen tweestapsverificatie had, kon een hacker met één uitgelekt wachtwoord nog steeds direct inloggen.",
+     "zette je meteen overal tweestapsverificatie aan en bouwde je alles vanaf het begin veilig op. Omdat je dat had gedaan, hoefde je later niks om te bouwen en kwamen hackers er niet zomaar in."]},
+ {ch:"De eerste klanten", q:"Je bedrijf krijgt de eerste klanten. Waar bewaar je hun gegevens?",
+  o:["In een Excel-bestand op de gedeelde computer. Iedereen kan er snel bij en het is gratis.",
+     "In een gedeelde cloudmap met één wachtwoord voor ons drieën. Makkelijk, en we kunnen overal bij.",
+     "In een klantsysteem waarin we alle drie een eigen account hebben. Dan zie je wie wat heeft aangepast.",
+     "In een beveiligd systeem waarin we alleen opslaan wat we echt nodig hebben. Minder gegevens betekent minder om kwijt te raken."],
+  t:"Daarna kreeg je de eerste klanten. ",
+  s:["Hun gegevens zette je in een Excel-bestand op de gedeelde computer. Maar omdat het bestand niet beveiligd was, kon iedereen die op die computer inlogde erbij, en je had geen idee wie het had gekopieerd.",
+     "Hun gegevens kwamen in een gedeelde cloudmap met één wachtwoord voor jullie drieën. Maar omdat jullie geen eigen accounts hadden, had de hacker alles toen één van jullie in een nepsite trapte, en wist je niet eens via wie.",
+     "Hun gegevens zette je in een klantsysteem met een eigen account voor ieder van jullie. Maar omdat je ook gegevens bewaarde die je niet nodig had, lag er bij een lek meer op straat dan nodig.",
+     "Je sloeg van hen alleen op wat je echt nodig had, in een beveiligd systeem. Omdat je dat had gedaan, kon er bijna niks uitlekken."]},
+ {ch:"De website", q:"Je laat een website maken. Een paar maanden later komt het nieuws over PHP2Shell, een ernstig lek in de software van ongeveer 70% van alle websites. Wat doe je?",
+  o:["Ik laat de website gewoon online. Elk uur offline kost omzet, en er zijn duizenden andere websites die ze eerst aanvallen.",
+     "Ik zet het op de lijst voor de websitebouwer. Hij komt volgende maand toch al langs, dat scheelt een extra rekening.",
+     "Ik laat de update deze week installeren. Dan kan de bouwer het netjes testen zonder haast.",
+     "Ik haal de website meteen offline tot het lek gedicht is, en ik zet automatische updates aan. Een paar uur offline is goedkoper dan een hack."],
+  t:"Toen PHP2Shell in het nieuws kwam, een lek in de software van ongeveer 70% van alle websites, ",
+  s:["liet je je website gewoon online om geen omzet te missen. Maar omdat je het lek niet had gedicht, namen hackers binnen een dag je server over en stalen ze de wachtwoorden van je klanten.",
+     "zette je het op de lijst voor de websitebouwer om een rekening te besparen. Maar omdat je niet meteen had gepatcht, was je website al gehackt voordat hij langskwam.",
+     "liet je de update binnen een week installeren. Maar omdat je zo lang had gewacht, konden hackers een paar dagen lang klantgegevens van je website halen.",
+     "haalde je je website meteen offline, net zoals Dunamare deed. Omdat je dat had gedaan, miste je een paar uur omzet, maar werd er niks gestolen."]},
+ {ch:"Het eerste personeel", q:"Je neemt je eerste 5 medewerkers aan. Hoe regel je hun accounts?",
+  o:["Iedereen gebruikt het bedrijfsaccount. Extra accounts kosten licentiegeld per persoon.",
+     "Iedereen krijgt een eigen account en kiest zelf een wachtwoord. Dat onthouden ze het makkelijkst.",
+     "Eigen accounts met verplicht sterke wachtwoorden. Dat is een kleine moeite.",
+     "Eigen accounts met tweestapsverificatie, en iedereen kan alleen bij wat hij voor zijn werk nodig heeft. Dat kost wat meer tijd om in te stellen."],
+  t:"Toen je je eerste 5 medewerkers aannam, ",
+  s:["liet je ze allemaal het bedrijfsaccount gebruiken om licentiegeld te besparen. Maar omdat niemand een eigen account had, wist niemand wie er iets fout had gedaan toen er bestanden verdwenen.",
+     "mochten ze allemaal zelf een wachtwoord kiezen. Maar omdat je geen sterke wachtwoorden verplichtte, kozen twee van hen 'Welkom123', en een hacker raadde dat binnen een paar seconden.",
+     "kregen ze eigen accounts met sterke wachtwoorden. Maar omdat je geen tweestapsverificatie had, kon een hacker met een gestolen wachtwoord toch gewoon inloggen.",
+     "kregen ze eigen accounts met tweestapsverificatie, en konden ze alleen bij wat ze voor hun werk nodig hadden. Omdat je dat had gedaan, kwam een hacker met een gestolen wachtwoord nergens."]},
+ {ch:"De eerste phishingmails", q:"Er komen steeds meer phishingmails binnen. Hoe bereid je je medewerkers voor?",
+  o:["Niet. De spamfilter van ons mailprogramma houdt de meeste tegen, dus het is zonde van hun werktijd.",
+     "Ik stuur iedereen één keer een mail met tips om phishing te herkennen. Dat kost vijf minuten.",
+     "Iedereen volgt één keer per jaar een online training. Dan is het in één keer geregeld.",
+     "Regelmatig korte trainingen, en af en toe stuur ik zelf een nep-phishingmail om te testen wie erin trapt. Dat kost steeds een beetje tijd."],
+  t:"Er kwamen steeds meer phishingmails binnen. ",
+  s:["Je vertrouwde op de spamfilter. Maar omdat je niemand had getraind, vulde een medewerker zijn wachtwoord in op een nepsite uit een mail die de filter had gemist.",
+     "Je stuurde iedereen één mail met tips. Maar omdat je ze verder niet had getraind, waren ze die na een week vergeten, en trapte iemand in een phishingmail die met AI was gemaakt en geen taalfouten had.",
+     "Iedereen volgde één keer per jaar een training. Maar omdat je daarna niet meer oefende, zakte het weg, en een paar maanden later trapte iemand toch in een phishingmail.",
+     "Je gaf regelmatig korte trainingen en stuurde zelf nep-phishingmails. Omdat je dat had gedaan, trapte na de derde test bijna niemand er meer in."]},
+ {ch:"Updates", q:"Medewerkers krijgen steeds meldingen dat hun laptop een update moet installeren. Wat regel je?",
+  o:["Ze mogen de updates overslaan. Een herstart midden op de dag kost werktijd.",
+     "Ze installeren de updates wanneer het hun uitkomt. Zij weten zelf het best wanneer ze tijd hebben.",
+     "Eén keer per maand doet iedereen tegelijk de updates. Dan kun je het goed plannen.",
+     "De updates worden automatisch 's nachts geïnstalleerd. Dat moet één keer ingesteld worden."],
+  t:"Bij de updates van de laptops ",
+  s:["mocht iedereen ze overslaan. Maar omdat de laptops niet werden geüpdatet, kwam een hacker binnen via een lek dat allang gedicht had kunnen zijn.",
+     "mocht iedereen zelf bepalen wanneer. Maar omdat de helft het bleef uitstellen, kwam een hacker binnen via één laptop die al maanden geen update had gehad.",
+     "deed iedereen één keer per maand tegelijk de updates. Maar omdat lekken daardoor soms weken openstonden, was een hacker je een keer net voor.",
+     "zorgde je dat ze automatisch 's nachts werden geïnstalleerd. Omdat je dat had gedaan, waren alle laptops altijd bij en vonden hackers geen open lekken."]},
+ {ch:"Back-ups", q:"Hoe maak je back-ups van je bedrijfsgegevens?",
+  o:["We maken geen aparte back-ups. Alles staat al in de cloud, en dat is al veilig.",
+     "Eén keer per week zet iemand de belangrijkste bestanden op een externe harde schijf. Goedkoop en simpel.",
+     "Er wordt elke dag automatisch een back-up gemaakt in de cloud. Daar hoef je niet meer aan te denken.",
+     "Elke dag een automatische back-up, ook een kopie die los van het netwerk staat, en we testen of terugzetten werkt. Dat kost wat extra opslag en tijd."],
+  t:"Op een ochtend sloeg ransomware toe. ",
+  s:["Maar omdat je geen aparte back-ups had gemaakt, werd alles in de cloud mee versleuteld en had je niks meer.",
+     "Maar omdat je back-up maar één keer per week op een schijf werd gezet die nog aan de computer vastzat, werd die mee versleuteld en was je een week aan werk kwijt.",
+     "Je had dagelijkse back-ups in de cloud. Maar omdat je geen kopie los van het netwerk had, kon de hacker daar ook bij en versleutelde hij een deel ervan.",
+     "Omdat je een back-up los van het netwerk had en had getest of terugzetten werkte, was je binnen een dag weer aan het werk. De hacker kreeg geen cent."]},
+ {ch:"De groei", q:"Je bedrijf groeit naar 40 medewerkers met laptops, telefoons, printers en servers. Hoe houd je bij wat je allemaal hebt?",
+  o:["Dat houd ik niet bij. Als iets kapot is, merken we het vanzelf.",
+     "Ik weet het grotendeels uit mijn hoofd. Ik heb bijna alles zelf gekocht.",
+     "Er is een Excel-lijst die we bijwerken als we eraan denken.",
+     "We gebruiken een programma dat automatisch bijhoudt welke apparaten er op het netwerk zitten. Dat kost een abonnement."],
+  t:"[naam] groeide naar 40 medewerkers. ",
+  s:["Maar omdat je niet bijhield welke apparaten je had, stond er een oude server in de hoek die al jaren geen update had gehad, en daar kwam een hacker via binnen.",
+     "Je wist ongeveer uit je hoofd wat je had. Maar omdat je het niet had opgeschreven, vergat je een printer die nog het wachtwoord 'admin' had, en een hacker gebruikte die om binnen te komen.",
+     "Je had een Excel-lijst van je apparaten. Maar omdat die niet bijgewerkt was, werden de nieuwe apparaten die er niet op stonden niet beveiligd.",
+     "Een programma hield automatisch bij welke apparaten er waren. Omdat je dat had gedaan, wist je precies wat je moest beveiligen en vergat je niks."]},
+ {ch:"De boekhouder", q:"Je besteedt de boekhouding uit aan een ander bedrijf. Wat doe je aan hun beveiliging?",
+  o:["Niks. Ik heb ze ingehuurd zodat ik me er niet mee bezig hoef te houden.",
+     "Ik heb voor een bekend en groot kantoor gekozen. Die hebben hun beveiliging vast op orde.",
+     "Ik zet afspraken over beveiliging in het contract. Dan zijn zij verantwoordelijk als het misgaat.",
+     "Ik stel eisen, controleer die regelmatig en geef ze alleen toegang tot wat ze nodig hebben. Dat kost tijd, en het contract wordt duurder."],
+  t:"Je besteedde de boekhouding uit ",
+  s:["zonder na te denken over hun beveiliging. Maar omdat je niks had gecontroleerd, kwam een hacker via het boekhoudkantoor ook bij jou binnen toen zij werden gehackt.",
+     "aan een groot, bekend kantoor. Maar omdat je hun toegang niet had beperkt, kon de hacker via hen bij al je systemen toen zij werden gehackt.",
+     "met afspraken over beveiliging in het contract. Maar omdat je niet controleerde of ze zich eraan hielden, werden ze toch gehackt, en je klantgegevens waren al weg toen je ze aansprakelijk stelde.",
+     "en gaf het kantoor alleen toegang tot de boekhouding. Omdat je dat had gedaan, kon de hacker niet bij de rest van je bedrijf toen zij werden gehackt."]},
+ {ch:"De investeerder", q:"Een investeerder vraagt hoeveel geld je aan cybersecurity wilt uitgeven. Wat zeg je?",
+  o:["Zo min mogelijk. Dat geld kan beter naar groei en marketing.",
+     "Niet veel extra. We gebruiken Microsoft 365, en daar zit beveiliging al in.",
+     "Een vast budget voor goede beveiligingssoftware. Dan weet je precies wat het kost.",
+     "Budget voor de basis, en tijd om het personeel te trainen. Dat is duurder, want ze werken die uren niet."],
+  t:"Toen een investeerder vroeg hoeveel je aan cybersecurity wilde uitgeven, ",
+  s:["zei je 'zo min mogelijk'. Maar omdat er geen geld naar beveiliging ging, bleven alle gaten open, terwijl een datalek gemiddeld 5,4 miljoen euro kost.",
+     "zei je dat Microsoft het al regelde. Maar omdat je de instellingen niet zelf goed had gezet, stonden er nog veel dingen open die je makkelijk had kunnen dichtzetten.",
+     "koos je een vast budget voor software. Maar omdat er geen geld of tijd was voor je personeel, bleven de mensen de zwakste schakel.",
+     "koos je voor de basis en tijd om je personeel te trainen. Omdat je dat had gedaan, waren zowel je techniek als je mensen goed voorbereid."]},
+ {ch:"AI op de werkvloer", q:"Je medewerkers willen AI gebruiken voor hun werk, zoals mails schrijven en klantvragen beantwoorden. Wat besluit je?",
+  o:["Iedereen mag de gratis AI-tool gebruiken die hij wil, en er alles in zetten wat hij nodig heeft. Dat scheelt veel tijd en kost niks.",
+     "Ze mogen gratis AI-tools gebruiken, maar ik vraag of ze geen wachtwoorden of klantgegevens erin zetten. Dat is snel gezegd.",
+     "We kiezen samen een paar AI-tools die mogen, en ik schrijf op wat er wel en niet in mag. Dat kost een middagje werk.",
+     "We betalen voor een zakelijke AI-versie waarbij onze gegevens niet worden gebruikt om de AI te trainen. Ook zetten we AI in om aanvallen op te sporen, en een mens controleert altijd wat de AI doet. Dat kost een abonnement per persoon."],
+  t:"Toen je medewerkers AI wilden gebruiken, ",
+  s:["mochten ze elke gratis AI-tool gebruiken. Maar omdat er geen regels waren, plakte iemand er een complete klantenlijst in, en niemand weet waar die gegevens nu zijn.",
+     "vroeg je ze om geen klantgegevens in de AI te zetten. Maar omdat je geen echte regels had gemaakt, gebeurde dat in de haast toch.",
+     "maakte je duidelijke regels over welke AI-tools mochten. Maar omdat je AI zelf niet gebruikte voor je beveiliging, vonden hackers met AI lekken sneller dan jij.",
+     "nam je een zakelijke AI-versie en liet je AI ook aanvallen opsporen, met een mens die alles controleerde. Omdat je dat had gedaan, zag je verdachte inlogpogingen voordat hackers konden toeslaan."]},
+ {ch:"Het telefoontje", q:"Welke regel stel je in voor betalingen door de financiële afdeling?",
+  o:["Als ik bel of mail, maken ze het meteen over. Dat werkt snel en we missen geen deals.",
+     "Bij grote bedragen laten ze me het via de mail nog even bevestigen.",
+     "Bij grote bedragen bellen ze me altijd terug op mijn bekende nummer.",
+     "Ze bellen me altijd terug op mijn bekende nummer, en een tweede collega moet de betaling goedkeuren. Dat maakt betalen wel langzamer."],
+  t:"Op een dag deed een hacker met AI jouw stem na en belde hij de financiële afdeling. ",
+  s:["Maar omdat je geen controle op betalingen had ingesteld, maakten ze het meteen over en was er binnen een paar minuten €25.000 weg.",
+     "Maar omdat ze alleen per mail om bevestiging vroegen, en hij ook je mailbox had overgenomen, bevestigde hij de betaling gewoon zelf. €25.000 was weg.",
+     "Omdat ze je altijd terugbelden op je bekende nummer, viel hij door de mand. Maar omdat er nog steeds maar één persoon over betalingen besliste, lukte het een maand later met een nepfactuur toch.",
+     "Omdat ze je altijd terugbelden en een tweede collega de betaling moest goedkeuren, kwam hij nergens."]},
+ {ch:"200 medewerkers", q:"Je bedrijf heeft nu 200 medewerkers. Laat je testen hoe veilig je bent (pentest)?",
+  o:["Nee. Een pentest kost duizenden euro's, en we zijn nog nooit gehackt.",
+     "Ik laat het doen als we een keer iets geks merken.",
+     "Eén keer per jaar door een extern bedrijf. Dat is goed te betalen.",
+     "Continu, en de belangrijkste systemen het vaakst. Dat is het duurst."],
+  t:"Met 200 medewerkers ",
+  s:["liet je nooit een pentest doen, omdat je dacht dat je nog nooit gehackt was. Maar omdat je nooit had getest, zag je niet dat er al maanden een hacker meekeek.",
+     "liet je alleen een pentest doen als er iets geks gebeurde. Maar omdat je pas ging testen als het al misging, zat de hacker er dan vaak al weken.",
+     "liet je elk jaar een pentest doen. Maar omdat je maar één keer per jaar testte, vond een hacker een nieuw lek voordat jouw volgende test dat deed.",
+     "liet je continu pentesten, net als Heineken en Steinweg. Omdat je dat had gedaan, vond je nieuwe lekken voordat hackers dat deden."]},
+ {ch:"De hacker", q:"Je ICT-afdeling ontdekt dat er al een tijdje een hacker op het netwerk zit. Wat doe je?",
+  o:["Eerst zelf rustig kijken of het echt zo erg is. Een extern bureau inhuren kost meteen veel geld.",
+     "Meteen alle systemen uitzetten. Hoe sneller hij eruit ligt, hoe beter.",
+     "Alle verbindingen afsluiten en daarna een expert bellen.",
+     "Het incidentplan volgen: eerst stil uitzoeken hoe ver de hacker is, dan pas afsluiten, en experts inschakelen. De hacker zit dan wel nog even op het netwerk."],
+  t:"Toen bleek dat er al een tijdje een hacker op je netwerk zat, ",
+  s:["keek je eerst zelf rustig of het echt zo erg was. Maar omdat je geen experts had ingeschakeld, verzamelde hij ondertussen nog meer gegevens.",
+     "zette je meteen alle systemen uit. Maar omdat je niet eerst had uitgezocht waar hij zat, merkte de hacker het en versleutelde hij alles waar hij nog bij kon.",
+     "sloot je alle verbindingen af en belde je een expert. Maar omdat je geen incidentplan had, merkte de hacker het en sloeg hij toe voordat de expert er was.",
+     "volgde je je incidentplan. Omdat je eerst stil had uitgezocht hoe ver hij was, kon je hem in één keer buitensluiten voordat hij iets kon versleutelen."]},
+ {ch:"Het datalek", q:"Uit onderzoek blijkt dat de hacker klantgegevens heeft gestolen. Wat doe je?",
+  o:["Ik meld het niet. Slecht nieuws kost klanten, en het lek is toch al gedicht.",
+     "Ik wacht af of klanten er last van krijgen en meld het dan pas. Dan maak je niemand voor niks ongerust.",
+     "Ik zoek eerst alles uit en meld het daarna binnen een paar weken, met het complete verhaal.",
+     "Ik meld het binnen 72 uur bij de Autoriteit Persoonsgegevens (dat moet volgens de AVG) en ik licht de klanten in, ook al kost dat misschien klanten."],
+  t:"Later ontdekte je dat er klantgegevens waren gestolen. Daarna ",
+  s:["meldde je het niet. Maar omdat je het niet binnen 72 uur had gemeld, kreeg je een flinke AVG-boete toen het een paar maanden later toch uitkwam.",
+     "wachtte je af tot klanten zouden klagen. Maar omdat je het niet zelf had gemeld, lazen ze het in de krant, en de boete kwam er alsnog.",
+     "meldde je het na een paar weken. Maar omdat je het niet binnen 72 uur had gemeld, zoals de AVG verplicht, kreeg je toch een boete.",
+     "meldde je het binnen 72 uur bij de Autoriteit Persoonsgegevens en lichtte je je klanten in. Omdat je dat had gedaan, kreeg je geen boete en bleven de meeste klanten."]}
+];
+/* welke hoofdstukken samen één alinea vormen */
+const PARAGRAPHS = [[0,1,2,3],[4,5,6,7,8],[9,10,11],[12,13,14]];
+const MAX = Q.length*3;
+const LEVELS = [
+  {min:0,  cls:"s0", pill:"Open deur", title:"[naam] stond wagenwijd open",
+   end:"Uiteindelijk werd [naam] een van de ongeveer 60% gehackte mkb'ers die binnen 6 maanden failliet gaan.",
+   text:"Je hebt overal tijd en geld bespaard, maar hackers konden zo naar binnen lopen."},
+  {min:12, cls:"s1", pill:"Kwetsbaar", title:"[naam] was kwetsbaar",
+   end:"Uiteindelijk overleefde [naam] het nét, maar het kostte veel geld en veel klanten.",
+   text:"Je hebt een paar dingen geregeld, maar er zaten nog grote gaten in. Kleine bedrijven denken vaak dat het hen niet overkomt, terwijl hackers ze juist als oefening gebruiken."},
+  {min:24, cls:"s2", pill:"Redelijk", title:"[naam] was redelijk beveiligd, maar niet goed genoeg",
+   end:"Uiteindelijk kwam [naam] er redelijk vanaf, maar het had een stuk beter gekund.",
+   text:"Hier zitten de meeste bedrijven. Ze geven zichzelf gemiddeld een 7,1, maar dat is niet genoeg in een wereld waar iedereen met een AI-abonnement een aanval kan doen."},
+  {min:36, cls:"s3", pill:"Goed beveiligd", title:"[naam] was goed beveiligd",
+   end:"Uiteindelijk kwam [naam] er bijna zonder schade vanaf. Het is niet de vraag óf je gehackt wordt, maar wanneer, en jij was er klaar voor.",
+   text:"Je had de basis op orde en dacht aan de mensen, niet alleen aan de techniek."}
+];
+
+const ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+const $ = id => document.getElementById(id);
+
+/* Code = 6 tekens met de 15 antwoorden (2 bits per antwoord) + 1 controleteken. Moet gelijk zijn aan make_code() in questions.gd. */
+function normalize(raw){
+  return (raw||"").toUpperCase().replace(/[^0-9A-Z]/g,"").replace(/O/g,"0").replace(/[IL]/g,"1");
+}
+function decode(raw){
+  const c = normalize(raw);
+  if(c.length !== 7) return null;
+  let value = 0, check = 0;
+  for(let i=0;i<6;i++){
+    const v = ALPHABET.indexOf(c[i]);
+    if(v < 0) return null;
+    value = value*32 + v;
+    check += v*(i+1);
+  }
+  if(ALPHABET[check % 32] !== c[6]) return null;
+  const ans = [];
+  for(let i=0;i<Q.length;i++){ ans.push(Math.floor(value / Math.pow(4,i)) % 4); }
+  return ans;
+}
+
+function showForm(prefillCode, prefillName, wrong){
+  $("form").hidden = false; $("result").hidden = true;
+  if(prefillCode) $("code").value = prefillCode;
+  if(prefillName) $("naam").value = prefillName;
+  $("error").hidden = !wrong;
+  $("code").focus();
+}
+
+function showStory(ans, name){
+  const naam = name || "je bedrijf";
+  const nm = s => s.split("[naam]").join(naam);
+  const cap = t => t.replace(/(^|[.!?]\s+)([a-zà-ÿ])/g,(m,a,b)=>a+b.toUpperCase());
+  const score = ans.reduce((a,b)=>a+b,0);
+  const lv = [...LEVELS].reverse().find(l => score >= l.min);
+
+  $("form").hidden = true; $("result").hidden = false;
+  $("title").textContent = "HET VERHAAL VAN " + (name ? name.toUpperCase() : "JOUW BEDRIJF");
+  document.title = "Het verhaal van " + (name || "jouw bedrijf");
+
+  const tale = $("tale"); tale.innerHTML = "";
+  PARAGRAPHS.forEach(ids => {
+    const p = document.createElement("p");
+    p.textContent = cap(ids.map(i => nm(Q[i].t + Q[i].s[ans[i]])).join(" "));
+    tale.appendChild(p);
+  });
+  const end = document.createElement("p"); end.className = "end"; end.textContent = nm(lv.end); tale.appendChild(end);
+
+  $("score").innerHTML = score + "<small> / " + MAX + "</small>";
+  $("pill").textContent = lv.pill.toUpperCase(); $("pill").className = "pill " + lv.cls;
+  $("levelTitle").textContent = nm(lv.title).replace(/^je /, "Je ");
+  $("levelText").textContent = lv.text;
+  const cijfer = Math.round((1 + 9*score/MAX)*10)/10;
+  $("compare").textContent = "Als cijfer: " + cijfer.toLocaleString("nl-NL") + ". Nederlandse bedrijven geven hun eigen digitale weerbaarheid gemiddeld een 7,1 (Securitymanagement.nl, 2026).";
+
+  const list = $("list"); list.innerHTML = "";
+  Q.forEach((item,i) => {
+    const p = ans[i], d = document.createElement("div"); d.className = "ri";
+    d.innerHTML = '<span class="pts s'+p+'">+'+p+'</span><span class="ch"></span><span class="a"></span>';
+    d.children[1].textContent = (i+1) + " · " + item.ch.toUpperCase();
+    d.children[2].textContent = p === 3 ? "Je koos het beste antwoord." : "Beste antwoord: " + item.o[3];
+    list.appendChild(d);
+  });
+}
+
+$("form").addEventListener("submit", e => {
+  e.preventDefault();
+  const ans = decode($("code").value);
+  if(!ans){ $("error").hidden = false; return; }
+  const params = new URLSearchParams({c: normalize($("code").value)});
+  const n = $("naam").value.trim(); if(n) params.set("n", n);
+  history.replaceState(null, "", "?" + params.toString());
+  showStory(ans, n);
+  window.scrollTo(0,0);
+});
+
+const params = new URLSearchParams(location.search);
+const code = params.get("c"), name = (params.get("n") || "").slice(0,30);
+if(code){
+  const ans = decode(code);
+  if(ans) showStory(ans, name); else showForm(code, name, true);
+} else {
+  showForm();
+}
+</script>
+</body>
+</html>
