@@ -192,11 +192,21 @@ func _next_after(seconds: float) -> void:
 	if index < QuizData.QUESTIONS.size():
 		_show_question()
 	else:
-		_show_result()
+		_hackscreen()
 
 
 # ---------- 3. resultaat, code en QR ----------
-
+func _hackscreen() -> void:
+	var websitepublish = Button.new()
+	websitepublish.set_meta("foo", 42)
+	websitepublish.text = "publish website"
+	websitepublish.font("res://terminal 16 unicode.ttf")
+	websitepublish.pressed.connect(websitepushished.bind(websitepublish))
+	add_child(websitepublish)
+	
+	func websitepublished() -> void:
+		
+	
 func _score() -> int:
 	var s := 0
 	for a in answers:
