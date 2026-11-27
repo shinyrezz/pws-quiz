@@ -8,7 +8,7 @@
 scale = Vector2(5, 5)
 script = ExtResource("1_fr6qw")
 
-[node name="achtergrond" type="ColorRect" parent="."]
+[node name="achtergrond" type="ColorRect" parent="." unique_id=1432482438]
 offset_left = -500.0
 offset_top = -500.0
 offset_right = 3000.0
@@ -36,7 +36,7 @@ offset_right = 489.33334
 offset_bottom = 157.77777
 theme_override_fonts/font = ExtResource("2_oiqhk")
 text = "Je krijgt 15 vragen over cybersecurity
-Bij elke vraag krijg je 30 seconden
+Bij elke vraag krijg je 60 seconden
 om antwoord te geven.
 
 gebaseert op je antwoord krijg je punten

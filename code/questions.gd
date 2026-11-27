@@ -5,7 +5,7 @@ const QrCode = preload("res://code/qr_code.gd")
 
 ## Adres van de GitHub Page (met / aan het eind Rowan).
 const SITE_URL := "https://shinyrezz.github.io/pws-quiz/"
-const TIME_PER_QUESTION := 30.0
+const TIME_PER_QUESTION := 60.0
 ## Tekens voor de code (zonder 0/O en 1/I/L teggen verwarring(ja rowan dit is normaal)
 const ALPHABET := "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
 
@@ -84,7 +84,7 @@ func _show_name_screen() -> void:
 	_clear()
 	screen.add_child(_label("hoe heet je bedrijf?", 48))
 	screen.add_child(_label("je begint een bedrijf met 2 vrienden.
-bij elke vraag kies jij wat je doet (30 sec per vraag)", 24, GREEN_DIM))
+bij elke vraag kies jij wat je doet (60 sec per vraag)", 24, GREEN_DIM))
 	var input := LineEdit.new()
 	input.placeholder_text = "Bijv. Bakkerij De Korst"
 	input.max_length = 30
@@ -128,7 +128,7 @@ func _show_question() -> void:
 	chapter_label = _label("vraag %d: %s" % [index + 1, item.ch], 24, GREEN_DIM)
 	chapter_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top.add_child(chapter_label)
-	timer_label = _label("tijd: 30", 32)
+	timer_label = _label("tijd: 60", 32)
 	timer_label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	top.add_child(timer_label)
 	screen.add_child(top)
